@@ -1,0 +1,15 @@
+{
+"choices":
+{
+    "sell_cash_gain": 75,
+    "sell_heat_gain": 10,
+    "bribe_heat_drop": 25,
+    "nap_heat_drop": 5,
+    "hazard_fee": 5
+    
+},
+"events": {
+    "police_heat_penalty": 15,
+    "stash_cash_gain": 15
+    }
+}
