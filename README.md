@@ -21,7 +21,7 @@ Your mission is to help Onni clean that final grand through black market street 
 The project follows clean, production-grade modular programming principles:
 
 ```text
-ONNI-TYCOON/
+Onnis-black-market-tycoon/
 │
 ├── main.py              # Game Entry Point & Main Control Loop
 │
@@ -45,7 +45,7 @@ Make sure you have Python 3.10 or newer installed.
 
 1. Clone this repository to your local machine:
    ```bash
-   git clone [https://github.com/your-username/Onni-Tycoon.git](https://github.com/your-username/Onni-Tycoon.git)
+   git clone https://github.com/your-username/Onnis-black-market-tycoon.git
 
 2. Navigate into the project folder:
    ```bash
