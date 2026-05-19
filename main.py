@@ -21,6 +21,14 @@ day = 1
 cash = 100
 heat = 0
 
+# Määritetään Onnin päämajan (HQ) paikka kartalla (X, Y)
+HQ_X = 200
+HQ_Y = 400
+
+# Määritetään ensimmäisen myyntipisteen (Route 1 päätepiste) paikka
+ROUTE1_X = 600
+ROUTE1_Y = 250
+
 # 4. PELISILMUKKA (Game Loop)
 # Tämä silmukka pyörii niin kauan kuin peli on käynnissä
 running = True
@@ -58,6 +66,30 @@ while running:
     screen.blit(day_text, (100, 18))
     screen.blit(cash_text, (500, 18))
     screen.blit(heat_text, (900, 18))
+
+    # Kartan ja päämajan piirtäminen
+
+    # 1. Piirretään reittiviiva HQ:sta myyntipisteeseen
+    # pygame.draw.line(pinta, väri_RGB, (alku_x, alku_y), (loppu_x, loppu_y), viivan_paksuus)
+    line_color = (100, 110, 125) # Tyylikäs sateenharmaa reittiviiva
+    pygame.draw.line(screen, line_color, (HQ_X, HQ_Y), (ROUTE1_X, ROUTE1_Y), 4)
+
+    # 2. Piirretään Onnin päämaja (HQ) hienona ympyränä
+    # pygame.draw.circle(pinta, väri_RGB, (keskipiste_x, keskipiste_y), säde_pikseleinä)
+    hq_color = (78, 154, 241) # Onnin päämajan sininen loisto
+    pygame.draw.circle(screen, hq_color, (HQ_X, HQ_Y), 25)
+
+    # 3. Piirretään ensimmäinen myyntipiste (oranssi ympyrä)
+    shop_color = (230, 126, 34)
+    pygame.draw.circle(screen, shop_color, (ROUTE1_X, ROUTE1_Y), 15)
+
+    # Laitetaan vielä pienet tekstit solmujen kohdalle, jotta pelaaja tajuaa mitä ne ovat
+    hq_label = font.render("Onni's HQ", True, hq_color)
+    shop_label = font.render("Route 1 (Drop-off)", True, shop_color)
+
+    # Siirretään tekstejä hieman sivuun ympyröistä, etteivät ne ole päällekkäin
+    screen.blit(hq_label, (HQ_X - 45, HQ_Y + 35))
+    screen.blit(shop_label, (ROUTE1_X - 80, ROUTE1_Y - 45))
 
     # Päivitetään ruutu näyttämään kaikki uudet piirrokset
     pygame.display.flip()
