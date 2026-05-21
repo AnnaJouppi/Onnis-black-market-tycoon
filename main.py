@@ -1,3 +1,4 @@
+import math
 import pygame
 import sys
 
@@ -15,6 +16,7 @@ pygame.display.set_caption("Onni's Black Market Tycoon - Graphical Version")
 clock = pygame.time.Clock()
 # Käytetään Pygamen oletusfonttia, 32
 font = pygame.font.Font(None, 32)
+small_font = pygame.font.Font(None, 22) # Pienempi fontti tooltipeille
 
 # Pelin oletusarvot
 day = 1
@@ -41,7 +43,8 @@ while running:
             running = False  # Sulkee pelisilmukan, kun painat ruksia
 
     # --- B. PELILOGIIKAN PÄIVITYS (Update) ---
-    # Tähän väliin koodataan myöhemmin muulien liikkuminen ja ajan kuluminen
+    # Haetaan hiiren nykyiset X- ja Y-koordinaatit joka kierroksella
+    mouse_x, mouse_y = pygame.mouse.get_pos()
 
     # --- C. PIIRTÄMINEN (Render / Draw) ---
     # Täytetään ruutu pimeiden kujien tunnelmaan sopivalla tummanharmaalla (RGB-värit)
@@ -53,9 +56,86 @@ while running:
     TOP_BAR_HEIGHT = 60
     pygame.draw.rect(screen, (28, 30, 34), (0, 0, SCREEN_WIDTH, TOP_BAR_HEIGHT))
 
+     # Piirretään alapalkin taustalaatikko: (x, y, leveys, korkeus)
+    # Väri on hieman tummempi harmaa (28, 30, 34)
+    BOTTOM_BAR_HEIGHT = 60
+    BOTTOM_BAR_Y = SCREEN_HEIGHT - BOTTOM_BAR_HEIGHT
+    pygame.draw.rect(screen, (28, 30, 34), (0, BOTTOM_BAR_Y, SCREEN_WIDTH, TOP_BAR_HEIGHT))
+
+    # Painikkeiden asetukset
+    btn_y = BOTTOM_BAR_Y + 30  # Keskikohta pystysuunnassa alapalkissa
+    radius = 20                # Ympyrän säde (suurempi, jotta numerot mahtuvat nätisti)
+
+    # Painikkeiden värit
+    btn_bg_color = (55, 61, 72) # Hieman vaaleampi harmaa painikkeille
+    btn_border_color = (100, 110, 125)
+    hover_color = (78, 154, 241) # Muuttuu siniseksi, kun hiiri on päällä!
+    text_color = (230, 235, 245) # Tyylikäs vaalea teksti
+    
+    # Määritetään 5 painiketta: (X-koordinaatti, Numero, Aputeksti)
+    buttons = [
+        (213, "1", "Send mules to sell contraband (+Cash, +Heat)"),
+        (426, "2", "Bribe the alleyway guards (-Heat)"),
+        (640, "3", "Hide in the Jimm's box (Do nothing)"),
+        (853, "4", "Check inventory stock"),
+        (1066, "5", "Send a mule to sell a specific item")
+    ]
+
+    # Muuttuja, johon tallennetaan parhaillaan hoverattavan painikkeen aputeksti
+    active_tooltip = None
+    tooltip_x, tooltip_y = 0, 0
+
+    # Piirretään painikkeet silmukassa ja katsotaan onko hiiri painikkeen päällä
+    for x, number, tooltip_text in buttons:
+        # Lasketaan etäisyys hiiren ja ympyrän keskipisteen välillä (Pythagoraan lause)
+        distance = math.hypot(mouse_x - x, mouse_y - btn_y)
+        
+        # Jos etäisyys on pienempi kuin säde, hiiri on ympyrän SILLÄ PUOLELLA (Hover!)
+        is_hovered = distance < radius
+        
+        # Valitaan väri sen mukaan, onko hiiri päällä vai ei
+        current_border = hover_color if is_hovered else btn_border_color
+        current_bg = (45, 50, 60) if is_hovered else btn_bg_color
+
+        # 1. Piirretään ulkoreuna (isompi ympyrä)
+        pygame.draw.circle(screen, current_border, (x, btn_y), radius)
+        # 2. Piirretään sisus (hieman pienempi ympyrä, jolloin väliin jää reuna)
+        pygame.draw.circle(screen, current_bg, (x, btn_y), radius - 3)
+
+        # 3. Piirretään numero keskelle ympyrää
+        num_surface = font.render(number, True, text_color)
+        # Keskihifistely tekstille: vähennetään puolet tekstin koosta, jotta se on tismalleen keskellä
+        screen.blit(num_surface, (x - num_surface.get_width()//2, btn_y - num_surface.get_height()//2))
+
+        # 4. Jos hiiri on päällä, otetaan aputeksti talteen piirtoa varten
+        if is_hovered:
+            active_tooltip = tooltip_text
+            tooltip_x = x
+            tooltip_y = btn_y - 65 # Piirretään laatikko painikkeen yläpuolelle
+
+    # --- APUTEKSTILAATIKON (TOOLTIP) PIIRTÄMINEN ---
+    # Piirretään tämä vasta silmukan jälkeen, jotta se kerrostuu kaikkien muiden asioiden päälle
+    if active_tooltip:
+        tooltip_surface = small_font.render(active_tooltip, True, (255, 255, 255))
+        pad_x, pad_y = 10, 6 # Tyhjää tilaa tekstin ympärille laatikkoon
+        
+        # Laatikon mitat tekstin mukaan
+        box_w = tooltip_surface.get_width() + (pad_x * 2)
+        box_h = tooltip_surface.get_height() + (pad_y * 2)
+        box_x = tooltip_x - box_w // 2
+        box_y = tooltip_y
+        
+        # Piirretään musta taustalaatikko pyöristetyillä kulmilla ja harmaalla reunalla
+        pygame.draw.rect(screen, (20, 22, 26), (box_x, box_y, box_w, box_h), 0, 4)
+        pygame.draw.rect(screen, hover_color, (box_x, box_y, box_w, box_h), 1, 4)
+        
+        # Liimataan teksti laatikon sisään
+        screen.blit(tooltip_surface, (box_x + pad_x, box_y + pad_y))
+
+
     # Luodaan tekstipinnat statsille
     # font.render("teksti", antialiasing, väri_RGB)
-    text_color = (230, 235, 245) # Tyylikäs vaalea teksti
+   
 
     day_text = font.render(f"DAY: {day}", True, text_color)
     cash_text = font.render(f"CASH: {cash}€", True, (100, 220, 110)) # Vihreä raha!
@@ -66,6 +146,7 @@ while running:
     screen.blit(day_text, (100, 18))
     screen.blit(cash_text, (500, 18))
     screen.blit(heat_text, (900, 18))
+
 
     # Kartan ja päämajan piirtäminen
 
