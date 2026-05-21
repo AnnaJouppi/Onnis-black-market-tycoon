@@ -53,6 +53,14 @@ while running:
     TOP_BAR_HEIGHT = 60
     pygame.draw.rect(screen, (28, 30, 34), (0, 0, SCREEN_WIDTH, TOP_BAR_HEIGHT))
 
+     # Piirretään alapalkin taustalaatikko: (x, y, leveys, korkeus)
+    # Väri on hieman tummempi harmaa (28, 30, 34)
+    BOTTOM_BAR_HEIGHT = 60
+    BOTTOM_BAR_Y = SCREEN_HEIGHT - BOTTOM_BAR_HEIGHT
+
+
+    pygame.draw.rect(screen, (28, 30, 34), (0, BOTTOM_BAR_Y, SCREEN_WIDTH, TOP_BAR_HEIGHT))
+
     # Luodaan tekstipinnat statsille
     # font.render("teksti", antialiasing, väri_RGB)
     text_color = (230, 235, 245) # Tyylikäs vaalea teksti
