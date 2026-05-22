@@ -31,6 +31,36 @@ HQ_Y = 400
 ROUTE1_X = 600
 ROUTE1_Y = 250
 
+# Alapalkin asetukset
+BOTTOM_BAR_HEIGHT = 60
+BOTTOM_BAR_Y = SCREEN_HEIGHT - BOTTOM_BAR_HEIGHT
+
+# Alapalkin painikkeiden asetukset
+btn_y = BOTTOM_BAR_Y + 30  # Keskikohta pystysuunnassa alapalkissa
+radius = 20                # Ympyrän säde (suurempi, jotta numerot mahtuvat nätisti)
+
+# Määritetään 5 painiketta: (X-koordinaatti, Numero, Aputeksti)
+buttons = [
+    (213, "1", "Send mules to sell contraband (+Cash, +Heat)"),
+    (426, "2", "Bribe the alleyway guards (-Heat)"),
+    (640, "3", "Hide in the Jimm's box (Do nothing)"),
+    (853, "4", "Check inventory stock"),
+    (1066, "5", "Send a mule to sell a specific item")
+    ]
+
+# VÄRIT
+# Kartta ja HQ
+line_color = (100, 110, 125) # Tyylikäs sateenharmaa reittiviiva
+hq_color = (78, 154, 241) # Onnin päämajan sininen loisto
+shop_color = (230, 126, 34)
+
+# Yläpalkki ja alapalkki
+# Painikkeiden värit
+btn_bg_color = (55, 61, 72) # Hieman vaaleampi harmaa painikkeille
+btn_border_color = (100, 110, 125)
+hover_color = (78, 154, 241) # Muuttuu siniseksi, kun hiiri on päällä!
+text_color = (230, 235, 245) # Tyylikäs vaalea teksti
+
 # 4. PELISILMUKKA (Game Loop)
 # Tämä silmukka pyörii niin kauan kuin peli on käynnissä
 running = True
@@ -41,6 +71,50 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False  # Sulkee pelisilmukan, kun painat ruksia
+        
+        # UUTTA: Kuunnellaan hiiren klikkauksia
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button == 1:  # 1 = Hiiren vasen painike
+                click_x, click_y = event.pos  # Otetaan talteen kohta, johon klikattiin
+
+                # Käydään kaikki 5 painiketta läpi ja katsotaan, osuiko klikkaus johonkin niistä
+                for x, number, tooltip_text in buttons:
+                    # Käytetään tuttua hypotenuusamatematiikkaa klikkauskohdan ja ympyrän välillä
+                    distance = math.hypot(click_x - x, click_y - btn_y)
+
+                    # Jos klikkaus osui ympyrän sisälle (etäisyys pienempi kuin säde)
+                    if distance < radius:
+                        print(f"Klikkasit painiketta {number}!")  # Debug-tulostus VS Coden konsoliin
+
+                        # REAGOIDAAN KLIKKAUKSEEN TEKSTIPELIN SÄÄNTÖJEN MUKAAN:
+                        
+                        if number == "1":
+                            # MVP-vaihe: Lisätään suoraan Cash/Heat (Tulevaisuudessa haetaan inventory-moduulista!)
+                            cash += 75
+                            heat += 10
+                            day += 1  # Päivä vaihtuu onnistuneesta toiminnosta
+
+                        elif number == "2":
+                            # Bribe: Heat tippuu 25, ei maksa mitään tekstiversion mukaan!
+                            heat -= 25
+                            if heat < 0:
+                                heat = 0
+                            day += 1
+
+                        elif number == "3":
+                            # Hide in Jimm's box: Heat tippuu 5
+                            heat -= 5
+                            if heat < 0:
+                                heat = 0
+                            day += 1
+
+                        elif number == "4":
+                            # Logiikka työn alle myöhemmin (Inventory)
+                            print("Inventory-toiminnallisuus työn alla...")
+
+                        elif number == "5":
+                            # Logiikka työn alle myöhemmin (Specific item sale)
+                            print("Tietyn tuotteen myynti-toiminnallisuus työn alla...")
 
     # --- B. PELILOGIIKAN PÄIVITYS (Update) ---
     # Haetaan hiiren nykyiset X- ja Y-koordinaatit joka kierroksella
@@ -54,16 +128,13 @@ while running:
 
     # 1.1 Piirretään reittiviiva HQ:sta myyntipisteeseen
     # pygame.draw.line(pinta, väri_RGB, (alku_x, alku_y), (loppu_x, loppu_y), viivan_paksuus)
-    line_color = (100, 110, 125) # Tyylikäs sateenharmaa reittiviiva
     pygame.draw.line(screen, line_color, (HQ_X, HQ_Y), (ROUTE1_X, ROUTE1_Y), 4)
 
     # 1.2. Piirretään Onnin päämaja (HQ) hienona ympyränä
     # pygame.draw.circle(pinta, väri_RGB, (keskipiste_x, keskipiste_y), säde_pikseleinä)
-    hq_color = (78, 154, 241) # Onnin päämajan sininen loisto
     pygame.draw.circle(screen, hq_color, (HQ_X, HQ_Y), 25)
 
     # 1.3. Piirretään ensimmäinen myyntipiste (oranssi ympyrä)
-    shop_color = (230, 126, 34)
     pygame.draw.circle(screen, shop_color, (ROUTE1_X, ROUTE1_Y), 15)
 
     # Laitetaan vielä pienet tekstit solmujen kohdalle, jotta pelaaja tajuaa mitä ne ovat
@@ -74,15 +145,8 @@ while running:
     screen.blit(hq_label, (HQ_X - 45, HQ_Y + 35))
     screen.blit(shop_label, (ROUTE1_X - 80, ROUTE1_Y - 45))
 
-
     # 2. YLÄPALKKI JA ALAPALKKI
     
-    # Painikkeiden värit
-    btn_bg_color = (55, 61, 72) # Hieman vaaleampi harmaa painikkeille
-    btn_border_color = (100, 110, 125)
-    hover_color = (78, 154, 241) # Muuttuu siniseksi, kun hiiri on päällä!
-    text_color = (230, 235, 245) # Tyylikäs vaalea teksti
-
     # Piirretään yläpalkin taustalaatikko: (x, y, leveys, korkeus)
     # Väri on hieman tummempi harmaa (28, 30, 34)
     TOP_BAR_HEIGHT = 60
@@ -102,22 +166,7 @@ while running:
 
     # Piirretään alapalkin taustalaatikko: (x, y, leveys, korkeus)
     # Väri on hieman tummempi harmaa (28, 30, 34)
-    BOTTOM_BAR_HEIGHT = 60
-    BOTTOM_BAR_Y = SCREEN_HEIGHT - BOTTOM_BAR_HEIGHT
     pygame.draw.rect(screen, (28, 30, 34), (0, BOTTOM_BAR_Y, SCREEN_WIDTH, TOP_BAR_HEIGHT))
-
-    # Alapalkin painikkeiden asetukset
-    btn_y = BOTTOM_BAR_Y + 30  # Keskikohta pystysuunnassa alapalkissa
-    radius = 20                # Ympyrän säde (suurempi, jotta numerot mahtuvat nätisti)
-
-    # Määritetään 5 painiketta: (X-koordinaatti, Numero, Aputeksti)
-    buttons = [
-        (213, "1", "Send mules to sell contraband (+Cash, +Heat)"),
-        (426, "2", "Bribe the alleyway guards (-Heat)"),
-        (640, "3", "Hide in the Jimm's box (Do nothing)"),
-        (853, "4", "Check inventory stock"),
-        (1066, "5", "Send a mule to sell a specific item")
-    ]
 
     # Muuttuja, johon tallennetaan parhaillaan hoverattavan painikkeen aputeksti
     active_tooltip = None
